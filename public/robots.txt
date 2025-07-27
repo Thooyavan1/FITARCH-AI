@@ -66,6 +66,3 @@ Sitemap: https://fitarch-ai.com/sitemap.xml
 # Sitemap: https://fitarch-ai.com/sitemap-blog.xml
 # Sitemap: https://fitarch-ai.com/sitemap-workouts.xml
 # Sitemap: https://fitarch-ai.com/sitemap-nutrition.xml
-
-
-
