@@ -1,0 +1,69 @@
+{
+  "name": "FitArch AI - AI-Powered Fitness Assistant",
+  "short_name": "FitArch AI",
+  "description": "Your personal AI-powered fitness assistant that helps you achieve your fitness goals with personalized workouts, nutrition guidance, and real-time coaching.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#3B82F6",
+  "background_color": "#FFFFFF",
+  "lang": "en",
+  "categories": ["fitness", "health", "lifestyle", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshots/mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Start Workout",
+      "short_name": "Workout",
+      "description": "Quickly start a new workout session",
+      "url": "/dashboard?action=workout",
+      "icons": [
+        {
+          "src": "/icons/workout-shortcut.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Nutrition Plan",
+      "short_name": "Nutrition",
+      "description": "View your personalized nutrition plan",
+      "url": "/dashboard?action=nutrition",
+      "icons": [
+        {
+          "src": "/icons/nutrition-shortcut.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

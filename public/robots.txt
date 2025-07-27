@@ -1,0 +1,71 @@
+# Robots.txt for FitArch AI - AI-Powered Fitness Assistant
+# https://fitarch-ai.com
+
+# Allow all search engines to crawl the site
+User-agent: *
+
+# Allow crawling of all public content
+Allow: /
+
+# Disallow access to sensitive and private areas
+Disallow: /api/
+Disallow: /private/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /profile/
+Disallow: /settings/
+Disallow: /auth/
+Disallow: /login/
+Disallow: /register/
+Disallow: /logout/
+Disallow: /payment/
+Disallow: /billing/
+Disallow: /subscription/
+Disallow: /premium/
+Disallow: /upload/
+Disallow: /videos/
+Disallow: /media/private/
+Disallow: /temp/
+Disallow: /cache/
+Disallow: /logs/
+Disallow: /config/
+Disallow: /.env
+Disallow: /.git/
+Disallow: /node_modules/
+Disallow: /src/
+Disallow: /build/
+Disallow: /dist/
+
+# Disallow crawling of development and testing files
+Disallow: /*.json$
+Disallow: /*.xml$
+Disallow: /*.txt$
+Disallow: /*.log$
+Disallow: /*.md$
+Disallow: /*.yml$
+Disallow: /*.yaml$
+
+# Allow crawling of important public assets
+Allow: /public/
+Allow: /assets/
+Allow: /images/
+Allow: /css/
+Allow: /js/
+Allow: /fonts/
+Allow: /icons/
+Allow: /logo/
+Allow: /media/public/
+
+# Crawl delay (optional - helps prevent server overload)
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://fitarch-ai.com/sitemap.xml
+
+# Additional sitemaps (if you have multiple)
+# Sitemap: https://fitarch-ai.com/sitemap-blog.xml
+# Sitemap: https://fitarch-ai.com/sitemap-workouts.xml
+# Sitemap: https://fitarch-ai.com/sitemap-nutrition.xml
+
+
+
