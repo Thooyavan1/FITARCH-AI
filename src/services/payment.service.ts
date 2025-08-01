@@ -1,19 +1,22 @@
 import axios from "axios";
 import type { AxiosResponse } from "axios";
 
-// Declare Razorpay types for TypeScript
+// ==========================
+// Global Declaration
+// ==========================
 declare global {
   interface Window {
     Razorpay: any;
   }
 }
 
-// Base URL for payment API - uses environment variable or fallback
+// ==========================
+// Constants & Interfaces
+// ==========================
 const PAYMENT_API_BASE_URL =
   import.meta.env.VITE_PAYMENT_API_URL || "https://your-payment-api.com";
 
-// Payment order interface
-interface PaymentOrder {
+export interface PaymentOrder {
   id: string;
   amount: number;
   currency: string;
@@ -22,23 +25,23 @@ interface PaymentOrder {
   created_at: number;
 }
 
-// Payment verification data interface
-interface PaymentVerificationData {
+export interface PaymentVerificationData {
   razorpay_order_id: string;
   razorpay_payment_id: string;
   razorpay_signature: string;
 }
 
-// Create axios instance with default configuration
+// ==========================
+// Axios Instance
+// ==========================
 const paymentApiClient = axios.create({
   baseURL: PAYMENT_API_BASE_URL,
-  timeout: 30000, // 30 seconds timeout
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Request interceptor to add auth token if available
 paymentApiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("authToken");
@@ -47,219 +50,158 @@ paymentApiClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  },
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor for error handling
 paymentApiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     console.error("Payment API Error:", error.response?.data || error.message);
     return Promise.reject(error);
-  },
+  }
 );
 
-/**
- * Creates a payment order for the specified amount
- * @param amount - Amount in INR (Indian Rupees)
- * @returns Promise<any> - Order details from the backend
- */
-export const createOrder = async (amount: number): Promise<any> => {
-  try {
-    if (amount <= 0) {
-      throw new Error("Amount must be greater than 0");
-    }
+// ==========================
+// Error Handling Utility
+// ==========================
+const handlePaymentError = (error: any, context: string): never => {
+  if (axios.isAxiosError(error)) {
+    const status = error.response?.status;
+    const message = error.response?.data?.message || error.message;
 
-    const response: AxiosResponse<PaymentOrder> = await paymentApiClient.post(
-      "/create-order",
-      {
-        amount: amount * 100, // Convert to paise (Razorpay expects amount in paise)
-        currency: "INR",
-        receipt: `receipt_${Date.now()}`, // Generate unique receipt ID
-        notes: {
-          source: "fitness-ai-app",
-          user_id: localStorage.getItem("userId") || "anonymous",
-        },
+    switch (status) {
+      case 400:
+        throw new Error(`Bad request during ${context}.`);
+      case 401:
+        throw new Error(`Authentication required for ${context}.`);
+      case 402:
+        throw new Error(`Payment failed during ${context}.`);
+      case 404:
+        throw new Error(`Resource not found during ${context}.`);
+      case 409:
+        throw new Error(`Conflict detected during ${context}.`);
+      default:
+        if (status && status >= 500) {
+          throw new Error(`Server error during ${context}. Try again later.`);
+        }
+        throw new Error(`Error during ${context}: ${message}`);
+    }
+  }
+
+  throw new Error(`Network error during ${context}. Please try again.`);
+};
+
+// ==========================
+// Core API Services
+// ==========================
+
+export const createOrder = async (amount: number): Promise<PaymentOrder> => {
+  if (amount <= 0) throw new Error("Amount must be greater than 0");
+
+  try {
+    const response: AxiosResponse<PaymentOrder> = await paymentApiClient.post("/create-order", {
+      amount: amount * 100, // Convert to paise
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`,
+      notes: {
+        source: "fitness-ai-app",
+        user_id: localStorage.getItem("userId") || "anonymous",
       },
-    );
+    });
 
     return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const status = error.response?.status;
-      if (status === 400) {
-        throw new Error("Invalid amount provided for order creation.");
-      } else if (status === 401) {
-        throw new Error("Authentication required. Please log in to continue.");
-      } else if (status === 402) {
-        throw new Error("Payment failed. Please try again.");
-      } else if (status && status >= 500) {
-        throw new Error(
-          "Payment service is temporarily unavailable. Please try again later.",
-        );
-      } else {
-        throw new Error(
-          `Failed to create order: ${error.response?.data?.message || error.message}`,
-        );
-      }
-    }
-    throw new Error(
-      "Network error. Please check your connection and try again.",
-    );
+  } catch (error: any) {
+    return handlePaymentError(error, "create order");
   }
 };
 
-/**
- * Verifies the payment using backend logic
- * @param paymentData - Payment verification data from Razorpay
- * @returns Promise<boolean> - True if payment is verified successfully
- */
 export const verifyPayment = async (
-  paymentData: PaymentVerificationData,
+  paymentData: PaymentVerificationData
 ): Promise<boolean> => {
-  try {
-    if (
-      !paymentData.razorpay_order_id ||
-      !paymentData.razorpay_payment_id ||
-      !paymentData.razorpay_signature
-    ) {
-      throw new Error("Invalid payment data provided for verification.");
-    }
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = paymentData;
 
+  if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+    throw new Error("Invalid payment data provided for verification.");
+  }
+
+  try {
     const response: AxiosResponse<{ verified: boolean; message?: string }> =
       await paymentApiClient.post("/verify-payment", {
-        razorpay_order_id: paymentData.razorpay_order_id,
-        razorpay_payment_id: paymentData.razorpay_payment_id,
-        razorpay_signature: paymentData.razorpay_signature,
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
       });
 
     if (!response.data.verified) {
       throw new Error(response.data.message || "Payment verification failed.");
     }
 
-    return response.data.verified;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const status = error.response?.status;
-      if (status === 400) {
-        throw new Error("Invalid payment data provided for verification.");
-      } else if (status === 401) {
-        throw new Error("Authentication required for payment verification.");
-      } else if (status === 409) {
-        throw new Error("Payment already processed or order expired.");
-      } else if (status && status >= 500) {
-        throw new Error(
-          "Payment verification service is temporarily unavailable.",
-        );
-      } else {
-        throw new Error(
-          `Payment verification failed: ${error.response?.data?.message || error.message}`,
-        );
-      }
-    }
-    throw new Error(
-      "Network error during payment verification. Please try again.",
-    );
+    return true;
+  } catch (error: any) {
+    return handlePaymentError(error, "verify payment");
   }
 };
 
-/**
- * Initializes the Razorpay checkout interface
- * @param order - Order details from createOrder function
- * @param onSuccess - Callback function to execute after successful payment
- */
 export const initiateRazorpay = (
   order: PaymentOrder,
-  onSuccess: (paymentData: any) => void,
+  onSuccess: (paymentData: PaymentVerificationData) => void
 ): void => {
-  try {
-    // Check if Razorpay is loaded
-    if (typeof window.Razorpay === "undefined") {
-      throw new Error(
-        "Razorpay SDK not loaded. Please check your internet connection.",
-      );
-    }
-
-    // Get user details from localStorage or context
-    const userEmail = localStorage.getItem("userEmail") || "";
-    const userName = localStorage.getItem("userName") || "";
-
-    const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Your Razorpay Key ID
-      amount: order.amount,
-      currency: order.currency,
-      name: "FitArch AI",
-      description: "Premium Fitness AI Subscription",
-      image: "/logo.png", // Your app logo
-      order_id: order.id,
-      prefill: {
-        name: userName,
-        email: userEmail,
-        contact: "", // Can be added if available
-      },
-      notes: {
-        source: "fitness-ai-app",
-        user_id: localStorage.getItem("userId") || "anonymous",
-      },
-      theme: {
-        color: "#10B981", // Green color for fitness theme
-      },
-      modal: {
-        ondismiss: () => {
-          console.log("Payment modal dismissed");
-        },
-      },
-      handler: async (response: PaymentVerificationData) => {
-        try {
-          console.log("Payment successful:", response);
-
-          // Verify the payment
-          const isVerified = await verifyPayment(response);
-
-          if (isVerified) {
-            // Call the success callback
-            onSuccess(response);
-
-            // Update user premium status in localStorage
-            localStorage.setItem("isPremium", "true");
-            localStorage.setItem(
-              "premiumActivatedAt",
-              new Date().toISOString(),
-            );
-
-            // Show success message
-            console.log("Payment verified successfully!");
-          } else {
-            throw new Error("Payment verification failed.");
-          }
-        } catch (error) {
-          console.error("Payment verification error:", error);
-          alert("Payment verification failed. Please contact support.");
-        }
-      },
-    };
-
-    // Initialize Razorpay
-    const rzp = new window.Razorpay(options);
-    rzp.open();
-  } catch (error) {
-    console.error("Error initializing Razorpay:", error);
-    alert("Unable to initialize payment. Please try again.");
+  if (typeof window.Razorpay === "undefined") {
+    alert("Razorpay SDK not loaded. Check your internet connection.");
+    return;
   }
+
+  const userEmail = localStorage.getItem("userEmail") || "";
+  const userName = localStorage.getItem("userName") || "";
+
+  const options = {
+    key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+    amount: order.amount,
+    currency: order.currency,
+    name: "FitArch AI",
+    description: "Premium Fitness AI Subscription",
+    image: "/logo/logo.png",
+    order_id: order.id,
+    prefill: {
+      name: userName,
+      email: userEmail,
+      contact: "",
+    },
+    notes: {
+      source: "fitness-ai-app",
+      user_id: localStorage.getItem("userId") || "anonymous",
+    },
+    theme: {
+      color: "#10B981",
+    },
+    modal: {
+      ondismiss: () => console.log("Payment modal dismissed"),
+    },
+    handler: async (response: PaymentVerificationData) => {
+      try {
+        const isVerified = await verifyPayment(response);
+        if (isVerified) {
+          localStorage.setItem("isPremium", "true");
+          localStorage.setItem("premiumActivatedAt", new Date().toISOString());
+          onSuccess(response);
+          console.log("Payment verified successfully!");
+        } else {
+          throw new Error("Payment verification failed.");
+        }
+      } catch (error) {
+        console.error("Verification error:", error);
+        alert("Payment verification failed. Please contact support.");
+      }
+    },
+  };
+
+  const razorpay = new window.Razorpay(options);
+  razorpay.open();
 };
 
-/**
- * Loads the Razorpay SDK dynamically
- * @returns Promise<void> - Resolves when SDK is loaded
- */
 export const loadRazorpaySDK = (): Promise<void> => {
   return new Promise((resolve, reject) => {
-    if (window.Razorpay) {
-      resolve();
-      return;
-    }
+    if (window.Razorpay) return resolve();
 
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
@@ -269,97 +211,43 @@ export const loadRazorpaySDK = (): Promise<void> => {
   });
 };
 
-/**
- * Gets payment history for the current user
- * @returns Promise<any[]> - Array of payment transactions
- */
 export const getPaymentHistory = async (): Promise<any[]> => {
   try {
-    const response: AxiosResponse<any[]> =
-      await paymentApiClient.get("/payment-history");
+    const response: AxiosResponse<any[]> = await paymentApiClient.get("/payment-history");
     return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const status = error.response?.status;
-      if (status === 401) {
-        throw new Error("Authentication required to view payment history.");
-      } else if (status && status >= 500) {
-        throw new Error("Unable to fetch payment history at the moment.");
-      } else {
-        throw new Error(
-          `Failed to fetch payment history: ${error.response?.data?.message || error.message}`,
-        );
-      }
-    }
-    throw new Error("Network error while fetching payment history.");
+  } catch (error: any) {
+    return handlePaymentError(error, "fetch payment history");
   }
 };
 
-/**
- * Cancels an active subscription
- * @param subscriptionId - The subscription ID to cancel
- * @returns Promise<boolean> - True if cancellation is successful
- */
-export const cancelSubscription = async (
-  subscriptionId: string,
-): Promise<boolean> => {
+export const cancelSubscription = async (subscriptionId: string): Promise<boolean> => {
   try {
-    const response: AxiosResponse<{ cancelled: boolean; message?: string }> =
-      await paymentApiClient.post("/cancel-subscription", {
-        subscription_id: subscriptionId,
-      });
+    const response: AxiosResponse<{ cancelled: boolean }> = await paymentApiClient.post(
+      "/cancel-subscription",
+      { subscription_id: subscriptionId }
+    );
 
     if (response.data.cancelled) {
-      // Update localStorage
       localStorage.setItem("isPremium", "false");
       localStorage.removeItem("premiumActivatedAt");
     }
 
     return response.data.cancelled;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const status = error.response?.status;
-      if (status === 400) {
-        throw new Error("Invalid subscription ID provided.");
-      } else if (status === 401) {
-        throw new Error("Authentication required to cancel subscription.");
-      } else if (status === 404) {
-        throw new Error("Subscription not found.");
-      } else if (status && status >= 500) {
-        throw new Error("Unable to cancel subscription at the moment.");
-      } else {
-        throw new Error(
-          `Failed to cancel subscription: ${error.response?.data?.message || error.message}`,
-        );
-      }
-    }
-    throw new Error("Network error while cancelling subscription.");
+  } catch (error: any) {
+    return handlePaymentError(error, "cancel subscription");
   }
 };
 
-/**
- * Gets available premium plans
- * @returns Promise<any[]> - Array of available plans
- */
 export const getPremiumPlans = async (): Promise<any[]> => {
   try {
-    const response: AxiosResponse<any[]> =
-      await paymentApiClient.get("/premium-plans");
+    const response: AxiosResponse<any[]> = await paymentApiClient.get("/premium-plans");
     return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const status = error.response?.status;
-      if (status && status >= 500) {
-        throw new Error("Unable to fetch premium plans at the moment.");
-      } else {
-        throw new Error(
-          `Failed to fetch premium plans: ${error.response?.data?.message || error.message}`,
-        );
-      }
-    }
-    throw new Error("Network error while fetching premium plans.");
+  } catch (error: any) {
+    return handlePaymentError(error, "fetch premium plans");
   }
 };
 
-// Export the axios instance for custom requests if needed
+// ==========================
+// Export Axios Instance
+// ==========================
 export { paymentApiClient };

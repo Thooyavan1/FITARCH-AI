@@ -47,14 +47,15 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-gray-950 min-h-screen flex flex-col">
+    <div className="bg-gray-950 min-h-screen flex flex-col text-white">
       <Navbar />
+
       {/* Hero Section */}
       <motion.section
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7 }}
-        className="flex flex-col items-center justify-center text-center py-16 px-4 md:px-0"
+        className="flex flex-col items-center justify-center text-center py-16 px-4"
       >
         <h1 className="text-3xl md:text-5xl font-extrabold text-primary mb-4">
           Level Up Your Fitness Journey with FitArch AI
@@ -97,6 +98,7 @@ const Home: React.FC = () => {
             </h2>
             <VoiceAssistant />
           </div>
+
           {/* Video Workout Upload */}
           <div className="bg-gray-900 rounded-xl p-6 shadow-lg flex flex-col items-center">
             <h2 className="text-xl font-bold text-primary mb-4">
@@ -104,7 +106,8 @@ const Home: React.FC = () => {
             </h2>
             <VideoPlayer src="https://www.w3schools.com/html/mov_bbb.mp4" />
           </div>
-          {/* Premium Benefits */}
+
+          {/* Premium Plans */}
           <div
             id="premium-section"
             className="bg-gray-900 rounded-xl p-6 shadow-lg flex flex-col items-center"
@@ -112,7 +115,7 @@ const Home: React.FC = () => {
             <h2 className="text-xl font-bold text-primary mb-4">
               Premium Benefits
             </h2>
-            <div className="flex flex-col gap-6 md:flex-row md:gap-4">
+            <div className="flex flex-col gap-6">
               {premiumPlans.map((plan) => (
                 <PremiumCard
                   key={plan.planName}
@@ -126,6 +129,7 @@ const Home: React.FC = () => {
           </div>
         </motion.section>
       </div>
+
       <Footer />
     </div>
   );

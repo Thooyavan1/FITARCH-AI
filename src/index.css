@@ -1,29 +1,38 @@
+/* 🌀 Tailwind base setup */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* 🌐 Global HTML styles */
 html {
   scroll-behavior: smooth;
   font-family: "Poppins", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  height: 100%;
 }
 
+/* 🧱 Body baseline */
 body {
   min-height: 100vh;
-  background: #181a20;
+  background-color: #181a20;
   color: #f3f4f6;
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
 }
 
-/* Custom scrollbar styling */
+/* 🖱️ Scrollbar custom style for dark mode */
 ::-webkit-scrollbar {
   width: 8px;
   background: #23272f;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #2d323c;
   border-radius: 8px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #3b4252;
 }

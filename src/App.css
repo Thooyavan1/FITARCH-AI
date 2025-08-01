@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
 
+/* Base styles */
 html,
 body {
   height: 100%;
@@ -13,6 +14,7 @@ body {
   min-height: 100vh;
 }
 
+/* Root container */
 #root {
   min-height: 100vh;
   display: flex;
@@ -22,6 +24,7 @@ body {
   background: transparent;
 }
 
+/* Utility container */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -29,20 +32,23 @@ body {
   width: 100%;
 }
 
+/* Reusable card component */
 .card {
   background: #23272f;
   border-radius: 1rem;
-  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
   padding: 2rem;
   transition:
     transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .card:hover {
   transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
 }
 
+/* Primary button styling */
 .btn-primary {
   background: linear-gradient(90deg, #00c6fb 0%, #005bea 100%);
   color: #fff;
@@ -55,24 +61,28 @@ body {
   transition:
     background 0.2s,
     transform 0.15s;
-  box-shadow: 0 2px 8px 0 rgba(0, 198, 251, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 198, 251, 0.15);
 }
+
 .btn-primary:hover {
   background: linear-gradient(90deg, #005bea 0%, #00c6fb 100%);
   transform: translateY(-2px) scale(1.03);
 }
 
+/* Text utility classes */
 .text-center {
   text-align: center;
 }
+
 .text-white {
   color: #fff !important;
 }
+
 .text-muted {
   color: #a1a1aa !important;
 }
 
-/* Subtle fade-in animation for UI polish */
+/* Fade-in animation */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -83,11 +93,13 @@ body {
     transform: translateY(0);
   }
 }
+
 .animate-fade-in {
   animation: fade-in 0.7s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* Ensure Tailwind utility classes are not overridden */
+/* Prevent override of Tailwind utility classes */
 :where([class*="tw-"]) {
   all: unset;
 }
+

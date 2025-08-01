@@ -1,6 +1,7 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 
-const getSpeechRecognition = () => {
+// Helper to get browser-compatible SpeechRecognition
+const getSpeechRecognition = (): any => {
   return (
     (window as any).SpeechRecognition ||
     (window as any).webkitSpeechRecognition ||
@@ -10,32 +11,43 @@ const getSpeechRecognition = () => {
 
 const useVoice = () => {
   const recognitionRef = useRef<any>(null);
-  const [isListening, setIsListening] = useState(false);
-  const [transcript, setTranscript] = useState("");
+
+  const [isListening, setIsListening] = useState<boolean>(false);
+  const [transcript, setTranscript] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
   const startListening = useCallback(() => {
-    const SpeechRecognition = getSpeechRecognition();
-    if (!SpeechRecognition) {
+    const SpeechRecognitionConstructor = getSpeechRecognition();
+    if (!SpeechRecognitionConstructor) {
       setError("Speech recognition is not supported in this browser.");
       return;
     }
-    const recognition = new SpeechRecognition();
+
+    const recognition = new SpeechRecognitionConstructor();
     recognition.lang = "en-US";
     recognition.continuous = true;
     recognition.interimResults = false;
-    recognition.onstart = () => setIsListening(true);
-    recognition.onend = () => setIsListening(false);
-    recognition.onerror = (e: any) => {
-      setError(e.error || "Speech recognition error");
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onend = () => {
       setIsListening(false);
     };
-    recognition.onresult = (event: any) => {
-      const result = Array.from(event.results)
-        .map((res: any) => res[0].transcript)
-        .join(" ");
-      setTranscript(result);
+
+    recognition.onerror = (event: any) => {
+      setError(event.error || "Speech recognition error");
+      setIsListening(false);
     };
+
+    recognition.onresult = (event: any) => {
+      const resultText = Array.from(event.results)
+        .map((result: any) => result[0].transcript)
+        .join(" ");
+      setTranscript(resultText);
+    };
+
     recognitionRef.current = recognition;
     setError(null);
     setTranscript("");
@@ -44,6 +56,7 @@ const useVoice = () => {
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
+    setIsListening(false);
   }, []);
 
   const resetTranscript = useCallback(() => {
@@ -51,6 +64,7 @@ const useVoice = () => {
     setError(null);
   }, []);
 
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       recognitionRef.current?.stop();

@@ -4,8 +4,9 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const Login: React.FC = () => {
-  const { login } = useAuth();
+  const { login } = useAuth(); // Custom auth context
   const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -23,13 +24,13 @@ const Login: React.FC = () => {
         return;
       }
 
-      // Simulate login (replace with real API in production)
+      // 🔒 Simulate login (replace this with real authentication logic)
       const user = { id: "1", name: email.split("@")[0], email };
-      login(user);
-      setLoading(false);
+      login(user); // Set user in context
       navigate("/dashboard");
     } catch (err) {
       setError("Login failed. Please try again.");
+    } finally {
       setLoading(false);
     }
   };
@@ -47,6 +48,7 @@ const Login: React.FC = () => {
         </h2>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
+          {/* Email Input */}
           <div>
             <label className="block text-gray-300 mb-2" htmlFor="email">
               Email
@@ -63,6 +65,7 @@ const Login: React.FC = () => {
             />
           </div>
 
+          {/* Password Input */}
           <div>
             <label className="block text-gray-300 mb-2" htmlFor="password">
               Password
@@ -79,12 +82,14 @@ const Login: React.FC = () => {
             />
           </div>
 
+          {/* Error Message */}
           {error && (
             <div className="text-red-500 text-sm text-center bg-red-500/10 p-3 rounded-lg">
               {error}
             </div>
           )}
 
+          {/* Submit Button */}
           <button
             type="submit"
             className="w-full bg-primary text-white py-3 rounded-lg font-semibold shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
@@ -94,8 +99,9 @@ const Login: React.FC = () => {
           </button>
         </form>
 
+        {/* Link to Register */}
         <div className="text-gray-400 text-sm text-center mt-6">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link
             to="/register"
             className="text-primary hover:underline font-medium"

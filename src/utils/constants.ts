@@ -1,26 +1,32 @@
+// 🌐 Base API URL for server requests
 export const API_BASE_URL: string = "https://api.fitarch.ai";
 
+// 🌍 Supported language codes for translations
 export const SUPPORTED_LANGUAGES: string[] = [
-  "en",
-  "ta",
-  "hi",
-  "es",
-  "fr",
-  "de",
+  "en", // English
+  "ta", // Tamil
+  "hi", // Hindi
+  "es", // Spanish
+  "fr", // French
+  "de", // German
 ];
 
+// 🖼️ Fallback thumbnail image URL for videos
 export const DEFAULT_THUMBNAIL_URL: string =
   "https://fitarch.ai/assets/default-thumbnail.png";
 
+// 📹 Maximum video upload size in MB
 export const MAX_VIDEO_UPLOAD_SIZE_MB: number = 500;
 
+// 💎 Premium Plan Interface
 export interface PremiumPlan {
-  id: string;
-  name: string;
-  price: number;
-  features: string[];
+  id: string; // Unique plan identifier (e.g., "basic", "pro", "elite")
+  name: string; // Display name
+  price: number; // Monthly price in USD
+  features: string[]; // List of features included
 }
 
+// 💰 Premium plans offered in the app
 export const PREMIUM_PLANS: PremiumPlan[] = [
   {
     id: "basic",

@@ -1,3 +1,5 @@
+// E:\fitarch-ai-app\src\components\Navbar.tsx
+
 import React, { useState } from "react";
 import { UserCircle, Menu, X } from "lucide-react";
 
@@ -28,6 +30,7 @@ const Navbar: React.FC = () => {
         >
           FitArch <span className="text-white">AI</span>
         </a>
+
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-6">
           {navLinks.map((link) =>
@@ -47,8 +50,9 @@ const Navbar: React.FC = () => {
               >
                 {link.name}
               </a>
-            ),
+            )
           )}
+
           {/* Language Selector */}
           <select
             className="ml-4 bg-gray-800 text-gray-100 rounded px-2 py-1 focus:outline-none border border-gray-700"
@@ -61,13 +65,15 @@ const Navbar: React.FC = () => {
               </option>
             ))}
           </select>
+
           {/* User Icon */}
           <UserCircle
             size={32}
             className="ml-4 text-gray-400 hover:text-primary cursor-pointer"
           />
         </div>
-        {/* Mobile Hamburger */}
+
+        {/* Mobile Hamburger Button */}
         <button
           className="md:hidden text-gray-100 focus:outline-none"
           onClick={() => setMenuOpen((open) => !open)}
@@ -76,6 +82,7 @@ const Navbar: React.FC = () => {
           {menuOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
       </div>
+
       {/* Mobile Menu */}
       {menuOpen && (
         <div className="md:hidden bg-gray-900 border-t border-gray-800 px-4 pb-4">
@@ -99,8 +106,10 @@ const Navbar: React.FC = () => {
                 >
                   {link.name}
                 </a>
-              ),
+              )
             )}
+
+            {/* Language & User in Mobile */}
             <div className="flex items-center gap-2 mt-2">
               <label htmlFor="lang-mobile" className="text-sm text-gray-400">
                 Lang:
@@ -130,3 +139,4 @@ const Navbar: React.FC = () => {
 };
 
 export default Navbar;
+

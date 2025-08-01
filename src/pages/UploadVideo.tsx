@@ -27,19 +27,16 @@ const UploadVideo: React.FC = () => {
     description: "",
     file: null,
   });
+
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [uploadedVideoUrl, setUploadedVideoUrl] = useState<string | null>(null);
 
-  // Redirect to login if not authenticated
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-    }
+    if (!isAuthenticated) navigate("/login");
   }, [isAuthenticated, navigate]);
 
-  // Simulate upload progress
   useEffect(() => {
     if (isUploading) {
       const interval = setInterval(() => {
@@ -57,7 +54,7 @@ const UploadVideo: React.FC = () => {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (file && file.type.startsWith("video/")) {
       setFormData((prev) => ({ ...prev, file }));
     }
   };
@@ -76,7 +73,6 @@ const UploadVideo: React.FC = () => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-
     const file = e.dataTransfer.files?.[0];
     if (file && file.type.startsWith("video/")) {
       setFormData((prev) => ({ ...prev, file }));
@@ -86,9 +82,7 @@ const UploadVideo: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.file) {
-      return;
-    }
+    if (!formData.file) return;
 
     try {
       setUploadProgress(0);
@@ -96,11 +90,7 @@ const UploadVideo: React.FC = () => {
       setUploadedVideoUrl(videoUrl);
       setUploadProgress(100);
       setUploadSuccess(true);
-
-      // Redirect to dashboard after 2 seconds
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 2000);
+      setTimeout(() => navigate("/dashboard"), 2000);
     } catch (err) {
       console.error("Upload failed:", err);
     }
@@ -112,10 +102,7 @@ const UploadVideo: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
         <div className="text-center">
-          <Loader2
-            className="animate-spin mx-auto mb-4 text-primary"
-            size={48}
-          />
+          <Loader2 className="animate-spin mx-auto mb-4 text-primary" size={48} />
           <p className="text-gray-400">Redirecting to login...</p>
         </div>
       </div>
@@ -143,7 +130,7 @@ const UploadVideo: React.FC = () => {
         {/* Upload Form */}
         <div className="bg-gray-900 rounded-xl p-6 md:p-8 shadow-lg">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* File Upload Area */}
+            {/* File Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-3">
                 Video File
@@ -171,38 +158,29 @@ const UploadVideo: React.FC = () => {
                   {formData.file ? (
                     <div className="space-y-3">
                       <FileVideo className="mx-auto text-primary" size={48} />
-                      <div>
-                        <p className="text-white font-medium">
-                          {formData.file.name}
-                        </p>
-                        <p className="text-gray-400 text-sm">
-                          {(formData.file.size / (1024 * 1024)).toFixed(2)} MB
-                        </p>
-                      </div>
+                      <p className="text-white font-medium">{formData.file.name}</p>
+                      <p className="text-gray-400 text-sm">
+                        {(formData.file.size / (1024 * 1024)).toFixed(2)} MB
+                      </p>
                     </div>
                   ) : (
                     <div className="space-y-3">
                       <Upload className="mx-auto text-gray-400" size={48} />
-                      <div>
-                        <p className="text-white font-medium">
-                          Drop your video here or click to browse
-                        </p>
-                        <p className="text-gray-400 text-sm">
-                          Supports .mp4, .mov, .webm files
-                        </p>
-                      </div>
+                      <p className="text-white font-medium">
+                        Drop your video here or click to browse
+                      </p>
+                      <p className="text-gray-400 text-sm">
+                        Supported: MP4, MOV, WebM (Max: 100MB)
+                      </p>
                     </div>
                   )}
                 </label>
               </div>
             </div>
 
-            {/* Title Input */}
+            {/* Title */}
             <div>
-              <label
-                htmlFor="title"
-                className="block text-sm font-medium text-gray-300 mb-2"
-              >
+              <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-2">
                 Video Title
               </label>
               <input
@@ -212,38 +190,32 @@ const UploadVideo: React.FC = () => {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, title: e.target.value }))
                 }
-                placeholder="Enter a descriptive title for your workout video"
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Leg day strength circuit"
                 disabled={isUploading}
                 required
               />
             </div>
 
-            {/* Description Input */}
+            {/* Description */}
             <div>
-              <label
-                htmlFor="description"
-                className="block text-sm font-medium text-gray-300 mb-2"
-              >
+              <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-2">
                 Description (Optional)
               </label>
               <textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    description: e.target.value,
-                  }))
+                  setFormData((prev) => ({ ...prev, description: e.target.value }))
                 }
-                placeholder="Describe your workout, goals, or any specific areas you'd like AI feedback on"
                 rows={4}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                placeholder="Any notes for AI feedback..."
                 disabled={isUploading}
               />
             </div>
 
-            {/* Error Message */}
+            {/* Error */}
             {error && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
@@ -255,7 +227,7 @@ const UploadVideo: React.FC = () => {
               </motion.div>
             )}
 
-            {/* Success Message */}
+            {/* Success */}
             {uploadSuccess && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
@@ -264,7 +236,7 @@ const UploadVideo: React.FC = () => {
               >
                 <CheckCircle className="text-green-400" size={20} />
                 <div className="text-green-400 text-sm">
-                  <p>Video uploaded successfully!</p>
+                  <p>Upload successful!</p>
                   {uploadedVideoUrl && (
                     <p className="text-xs text-green-300 mt-1">
                       URL: {uploadedVideoUrl}
@@ -275,7 +247,7 @@ const UploadVideo: React.FC = () => {
               </motion.div>
             )}
 
-            {/* Upload Progress */}
+            {/* Progress */}
             {isUploading && (
               <div className="space-y-2">
                 <div className="flex justify-between text-sm text-gray-400">
@@ -293,7 +265,7 @@ const UploadVideo: React.FC = () => {
               </div>
             )}
 
-            {/* Submit Button */}
+            {/* Submit */}
             <button
               type="submit"
               disabled={!isFormValid || isUploading}
@@ -315,25 +287,20 @@ const UploadVideo: React.FC = () => {
           </form>
         </div>
 
-        {/* Tips Section */}
+        {/* Upload Tips */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
+          transition={{ delay: 0.3 }}
           className="mt-8 bg-gray-900 rounded-xl p-6 shadow-lg"
         >
-          <h3 className="text-lg font-semibold text-primary mb-4">
-            Upload Tips
-          </h3>
+          <h3 className="text-lg font-semibold text-primary mb-4">Upload Tips</h3>
           <ul className="space-y-2 text-gray-400 text-sm">
-            <li>
-              • Ensure good lighting and clear video quality for better AI
-              analysis
-            </li>
+            <li>• Ensure good lighting and clear video quality</li>
             <li>• Keep your full body in frame during the workout</li>
-            <li>• Record in landscape orientation for optimal viewing</li>
-            <li>• Maximum file size: 100MB</li>
-            <li>• Supported formats: MP4, MOV, WebM</li>
+            <li>• Use landscape orientation</li>
+            <li>• Max file size: 100MB</li>
+            <li>• Formats: MP4, MOV, WebM</li>
           </ul>
         </motion.div>
       </motion.div>

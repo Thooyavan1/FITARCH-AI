@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import {
+  Check, Star, Zap, Shield, Crown, Sparkles,
+  Globe, IndianRupee
+} from "lucide-react";
 import { usePremium } from "../context/PremiumContext";
-import { Check, Star, Zap, Shield, Crown, Sparkles } from "lucide-react";
 
 interface PlanFeature {
   icon: React.ComponentType<{ size?: number; className?: string }>;
@@ -11,16 +14,18 @@ interface PlanFeature {
 
 interface PlanData {
   name: string;
-  price: number;
-  features: PlanFeature[];
+  priceUSD: number;
+  priceINR: number;
   value: 3 | 4 | 5;
   popular?: boolean;
+  features: PlanFeature[];
 }
 
 const plans: PlanData[] = [
   {
     name: "Basic",
-    price: 3,
+    priceUSD: 5,
+    priceINR: 249,
     value: 3,
     features: [
       { icon: Check, label: "Remove ads" },
@@ -29,7 +34,8 @@ const plans: PlanData[] = [
   },
   {
     name: "Pro",
-    price: 4,
+    priceUSD: 8,
+    priceINR: 349,
     value: 4,
     popular: true,
     features: [
@@ -40,7 +46,8 @@ const plans: PlanData[] = [
   },
   {
     name: "Elite",
-    price: 5,
+    priceUSD: 11,
+    priceINR: 499,
     value: 5,
     features: [
       { icon: Check, label: "All Pro features" },
@@ -52,128 +59,113 @@ const plans: PlanData[] = [
 
 const PremiumPlans: React.FC = () => {
   const navigate = useNavigate();
-  const { setPlan, confirmPlan } = usePremium();
+  const { setPlan } = usePremium();
+  const [country, setCountry] = useState("IN");
 
-  const handleSubscribe = (planValue: 3 | 4 | 5) => {
-    setPlan(planValue);
-    confirmPlan();
-    navigate("/dashboard");
+  useEffect(() => {
+    const lang = navigator.language;
+    if (lang.includes("en-US") || lang.includes("en-GB")) {
+      setCountry("US");
+    } else {
+      setCountry("IN");
+    }
+  }, []);
+
+  const handleSubscribe = (value: 3 | 4 | 5) => {
+    setPlan(value);
+    navigate("/confirm-payment");
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 py-12 px-4">
+    <div className="min-h-screen bg-gray-950 py-12 px-4 text-white">
       <div className="max-w-6xl mx-auto">
-        {/* Page Title */}
-        <motion.div
+        <motion.h1
+          className="text-center text-4xl md:text-5xl font-extrabold mb-6"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
         >
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
-            Choose Your Premium Plan
-          </h1>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Unlock the full potential of FitArch AI with our premium features
-            designed to enhance your fitness journey.
-          </p>
-        </motion.div>
+          Choose Your Premium Plan
+        </motion.h1>
 
-        {/* Pricing Cards Grid */}
+        <p className="text-center text-gray-400 mb-10 text-lg">
+          Detected Country: <span className="text-primary font-semibold">{country}</span>
+        </p>
+
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto"
+          className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
         >
           {plans.map((plan, index) => (
             <motion.div
               key={plan.name}
+              className={`relative bg-gray-900 p-8 rounded-2xl border-2 transition-all ${
+                plan.popular
+                  ? "border-primary scale-105 shadow-xl"
+                  : "border-gray-800 hover:border-primary/50"
+              }`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
-              whileHover={{
-                scale: 1.05,
-                transition: { duration: 0.2 },
-              }}
-              className={`relative bg-gray-900 rounded-2xl p-8 border-2 transition-all duration-300 ${
-                plan.popular
-                  ? "border-primary shadow-2xl shadow-primary/20 scale-105"
-                  : "border-gray-800 hover:border-primary/60"
-              }`}
+              transition={{ delay: 0.2 + index * 0.1 }}
             >
-              {/* Popular Badge */}
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-primary text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                  <span className="bg-primary text-white px-4 py-1 rounded-full text-xs font-bold">
                     Most Popular
                   </span>
                 </div>
               )}
 
-              {/* Plan Header */}
-              <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-white mb-2">
-                  {plan.name}
-                </h3>
-                <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-4xl font-extrabold text-primary">
-                    ${plan.price}
-                  </span>
-                  <span className="text-gray-400">/month</span>
-                </div>
+              <h3 className="text-2xl font-bold text-center mb-2">{plan.name}</h3>
+              <div className="flex justify-center items-baseline gap-2 mb-6">
+                <span className="text-4xl font-extrabold text-primary">
+                  {country === "IN" ? `₹${plan.priceINR}` : `$${plan.priceUSD}`}
+                </span>
+                <span className="text-gray-400 text-sm">/month</span>
               </div>
 
-              {/* Features List */}
-              <ul className="space-y-4 mb-8">
-                {plan.features.map((feature, featureIndex) => (
-                  <motion.li
-                    key={featureIndex}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{
-                      duration: 0.3,
-                      delay: 0.5 + featureIndex * 0.1,
-                    }}
-                    className="flex items-center gap-3 text-gray-200"
-                  >
-                    <feature.icon
-                      size={20}
-                      className="text-primary flex-shrink-0"
-                    />
-                    <span className="text-sm">{feature.label}</span>
-                  </motion.li>
+              <ul className="space-y-4 mb-6">
+                {plan.features.map((feature, i) => (
+                  <li key={i} className="flex items-center gap-3 text-gray-300">
+                    <feature.icon className="text-primary" size={20} />
+                    <span>{feature.label}</span>
+                  </li>
                 ))}
               </ul>
 
-              {/* Subscribe Button */}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={() => handleSubscribe(plan.value)}
-                className={`w-full py-3 px-6 rounded-full font-semibold transition-all duration-300 ${
+                className={`w-full py-3 rounded-full font-semibold transition-all ${
                   plan.popular
-                    ? "bg-primary text-white shadow-lg hover:bg-primary/90 hover:shadow-xl"
-                    : "bg-gray-800 text-white hover:bg-primary/80 hover:shadow-lg"
+                    ? "bg-primary text-white hover:bg-primary/90"
+                    : "bg-gray-800 text-white hover:bg-primary/70"
                 }`}
               >
-                Subscribe Now
-              </motion.button>
+                {country === "IN" ? (
+                  <>
+                    <IndianRupee className="inline mr-2" size={18} />
+                    Pay via GPay / UPI
+                  </>
+                ) : (
+                  <>
+                    <Globe className="inline mr-2" size={18} />
+                    Pay via PayPal
+                  </>
+                )}
+              </button>
             </motion.div>
           ))}
         </motion.div>
 
-        {/* Additional Info */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          className="text-center mt-12"
-        >
-          <p className="text-gray-400 text-sm">
-            All plans include a 7-day free trial. Cancel anytime.
-          </p>
-        </motion.div>
+        {/* Manual note for India */}
+        {country === "IN" && (
+          <div className="text-center text-gray-400 text-sm mt-8">
+            <p>Manual UPI ID: <span className="text-primary font-mono">thoo1234yavan56789-2@okicici</span></p>
+            <p>Send payment screenshot to support if auto-confirmation fails.</p>
+          </div>
+        )}
       </div>
     </div>
   );

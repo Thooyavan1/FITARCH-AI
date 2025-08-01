@@ -4,32 +4,29 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  type ReactNode,
 } from "react";
-import type { ReactNode } from "react";
 
 export type PremiumPlan = 3 | 4 | 5;
 
-interface PremiumContextProps {
+interface PremiumContextType {
   selectedPlan: PremiumPlan | null;
   isPremiumActive: boolean;
   setPlan: (plan: PremiumPlan) => void;
   confirmPlan: () => void;
 }
 
-const PremiumContext = createContext<PremiumContextProps | undefined>(
-  undefined,
-);
+const PremiumContext = createContext<PremiumContextType | undefined>(undefined);
 
-export const PremiumProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
+export const PremiumProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [selectedPlan, setSelectedPlan] = useState<PremiumPlan | null>(null);
   const [isPremiumActive, setIsPremiumActive] = useState(false);
 
+  // Load from local storage on mount
   useEffect(() => {
-    const stored = localStorage.getItem("fitarch_premium_plan");
-    if (stored) {
-      setSelectedPlan(Number(stored) as PremiumPlan);
+    const savedPlan = localStorage.getItem("fitarch_premium_plan");
+    if (savedPlan) {
+      setSelectedPlan(Number(savedPlan) as PremiumPlan);
       setIsPremiumActive(true);
     }
   }, []);
@@ -41,7 +38,7 @@ export const PremiumProvider: React.FC<{ children: ReactNode }> = ({
 
   const confirmPlan = useCallback(() => {
     if (selectedPlan) {
-      localStorage.setItem("fitarch_premium_plan", String(selectedPlan));
+      localStorage.setItem("fitarch_premium_plan", selectedPlan.toString());
       setIsPremiumActive(true);
     }
   }, [selectedPlan]);
@@ -55,10 +52,10 @@ export const PremiumProvider: React.FC<{ children: ReactNode }> = ({
   );
 };
 
-export function usePremium() {
+export const usePremium = (): PremiumContextType => {
   const context = useContext(PremiumContext);
   if (!context) {
     throw new Error("usePremium must be used within a PremiumProvider");
   }
   return context;
-}
+};

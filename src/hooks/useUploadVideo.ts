@@ -1,6 +1,9 @@
 import { useState } from "react";
 
+// Supported video formats
 const SUPPORTED_FORMATS = ["video/mp4", "video/quicktime", "video/webm"];
+
+// Replace this with actual uploaded video URL when backend is ready
 const DUMMY_VIDEO_URL = "https://dummyvideo.com/video123.mp4";
 
 const useUploadVideo = () => {
@@ -9,21 +12,30 @@ const useUploadVideo = () => {
 
   const uploadVideo = async (file: File): Promise<string> => {
     setError(null);
+
+    // Validate file type
     if (!SUPPORTED_FORMATS.includes(file.type)) {
-      setError(
-        "Unsupported video format. Please upload .mp4, .mov, or .webm files.",
-      );
-      throw new Error("Unsupported video format");
+      const formatError =
+        "Unsupported video format. Please upload .mp4, .mov, or .webm files.";
+      setError(formatError);
+      throw new Error(formatError);
     }
+
     setIsUploading(true);
     try {
+      // Simulate upload delay
       await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Simulated uploaded video URL (replace with backend integration)
+      const uploadedUrl = DUMMY_VIDEO_URL;
+
       setIsUploading(false);
-      return DUMMY_VIDEO_URL;
+      return uploadedUrl;
     } catch (e) {
-      setError("Failed to upload video. Please try again.");
+      const uploadError = "Failed to upload video. Please try again.";
+      setError(uploadError);
       setIsUploading(false);
-      throw e;
+      throw new Error(uploadError);
     }
   };
 

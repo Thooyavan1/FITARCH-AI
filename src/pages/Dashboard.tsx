@@ -7,7 +7,14 @@ import VideoPlayer from "../components/VideoPlayer";
 import { Dumbbell, Star, ShieldCheck, Zap, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 
-const premiumPlans = [
+type Plan = {
+  planName: string;
+  price: number;
+  features: PremiumFeature[];
+  value: 3 | 4 | 5;
+};
+
+const premiumPlans: Plan[] = [
   {
     planName: "Starter",
     price: 249,
@@ -15,7 +22,7 @@ const premiumPlans = [
       { icon: Dumbbell, label: "Basic Workouts" },
       { icon: Star, label: "AI Recommendations" },
       { icon: ShieldCheck, label: "Progress Tracking" },
-    ] as PremiumFeature[],
+    ],
     value: 3,
   },
   {
@@ -26,7 +33,7 @@ const premiumPlans = [
       { icon: Zap, label: "Priority Support" },
       { icon: Star, label: "Advanced Analytics" },
       { icon: ShieldCheck, label: "Personalized Plans" },
-    ] as PremiumFeature[],
+    ],
     value: 4,
   },
   {
@@ -37,7 +44,7 @@ const premiumPlans = [
       { icon: Trophy, label: "1-on-1 Coaching" },
       { icon: Star, label: "Exclusive Content" },
       { icon: ShieldCheck, label: "Early Access Features" },
-    ] as PremiumFeature[],
+    ],
     value: 5,
   },
 ];
@@ -48,29 +55,28 @@ const Dashboard: React.FC = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex items-center justify-center h-screen text-xl text-gray-500">
+      <div className="flex items-center justify-center h-screen text-xl text-gray-400">
         Loading user info...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 py-8 px-2 md:px-8">
+    <div className="min-h-screen bg-gray-950 py-8 px-4 md:px-8 text-white">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="max-w-5xl mx-auto"
+        className="max-w-6xl mx-auto"
       >
         <h1 className="text-3xl md:text-4xl font-extrabold text-primary mb-2">
           Welcome, {user?.name || user?.email || "User"}!
         </h1>
         <p className="text-gray-400 mb-8">
-          This is your FitArch AI dashboard. Track your progress, access premium
-          features, and more.
+          This is your FitArch AI dashboard. Track your progress, access premium features, and more.
         </p>
 
-        {/* Premium Cards */}
+        {/* Premium Plans */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -84,13 +90,14 @@ const Dashboard: React.FC = () => {
               price={plan.price}
               features={plan.features}
               selected={selectedPlan === plan.value}
-              onSubscribe={() => setPlan(plan.value as 3 | 4 | 5)}
+              onSubscribe={() => setPlan(plan.value)}
             />
           ))}
         </motion.div>
+
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12">
           <button
-            className="bg-primary text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-primary/90 transition text-lg"
+            className="bg-primary text-white px-8 py-3 rounded-full font-bold shadow-md hover:bg-primary/90 transition text-lg"
             onClick={confirmPlan}
             disabled={isPremiumActive || !selectedPlan}
           >
@@ -103,7 +110,8 @@ const Dashboard: React.FC = () => {
             </span>
           )}
         </div>
-        {/* Voice Assistant & Video Player */}
+
+        {/* AI Assistant and Video Player */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -111,15 +119,12 @@ const Dashboard: React.FC = () => {
           className="grid md:grid-cols-2 gap-8"
         >
           <div className="bg-gray-900 rounded-xl p-6 shadow-lg">
-            <h2 className="text-xl font-bold text-primary mb-4">
-              AI Voice Assistant
-            </h2>
+            <h2 className="text-xl font-bold text-primary mb-4">AI Voice Assistant</h2>
             <VoiceAssistant />
           </div>
+
           <div className="bg-gray-900 rounded-xl p-6 shadow-lg flex flex-col items-center">
-            <h2 className="text-xl font-bold text-primary mb-4">
-              Workout Video
-            </h2>
+            <h2 className="text-xl font-bold text-primary mb-4">Workout Video</h2>
             <VideoPlayer src="https://www.w3schools.com/html/mov_bbb.mp4" />
           </div>
         </motion.div>
@@ -129,3 +134,4 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+

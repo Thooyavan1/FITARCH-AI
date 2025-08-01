@@ -1,21 +1,14 @@
+// File: src/App.tsx
+
 import React from "react";
-import "./styles/global.css";
-import { AuthProvider } from "./context/AuthContext";
-import { AIAssistantProvider } from "./context/AIAssistantContext";
-import { PremiumProvider } from "./context/PremiumContext";
 import AppRouter from "./routes/AppRouter";
+import "./App.css"; // Make sure this is imported for styling
 
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <AIAssistantProvider>
-        <PremiumProvider>
-          <div className="min-h-screen bg-[#181a20] font-poppins text-white">
-            <AppRouter />
-          </div>
-        </PremiumProvider>
-      </AIAssistantProvider>
-    </AuthProvider>
+    <React.StrictMode>
+      <AppRouter />
+    </React.StrictMode>
   );
 };
 
